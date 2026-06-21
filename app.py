@@ -484,58 +484,56 @@ with tab_feature:
         if st.session_state.feat_step > max_step:
             st.session_state.feat_step = max_step
 
-        fc1, fc2, fc3, fc4, fc5, fc6 = st.columns([1, 1, 1, 1, 1, 5])
         def _set_feat_step(v):
             st.session_state.feat_step = v
             st.session_state._feat_slider_val = v
 
-        with fc1:
+        ctrl_row = st.columns([1, 1, 1, 1, 1, 8])
+        with ctrl_row[0]:
             if st.button("⏮", key="feat_first", use_container_width=True):
                 _set_feat_step(0)
                 st.session_state.feat_playing = False
                 st.rerun()
-        with fc2:
+        with ctrl_row[1]:
             if st.button("◀", key="feat_prev", use_container_width=True):
                 st.session_state.feat_playing = False
                 if st.session_state.feat_step > 0:
                     _set_feat_step(st.session_state.feat_step - 1)
                 st.rerun()
-        with fc3:
+        with ctrl_row[2]:
             fp_label = "⏸" if st.session_state.feat_playing else "▶"
             if st.button(fp_label, key="feat_play", use_container_width=True):
                 st.session_state.feat_playing = not st.session_state.feat_playing
                 if st.session_state.feat_playing and st.session_state.feat_step >= max_step:
                     _set_feat_step(0)
                 st.rerun()
-        with fc4:
+        with ctrl_row[3]:
             if st.button("▶", key="feat_next", use_container_width=True):
                 st.session_state.feat_playing = False
                 if st.session_state.feat_step < max_step:
                     _set_feat_step(st.session_state.feat_step + 1)
                 st.rerun()
-        with fc5:
+        with ctrl_row[4]:
             if st.button("⏭", key="feat_last", use_container_width=True):
                 _set_feat_step(max_step)
                 st.session_state.feat_playing = False
                 st.rerun()
-
-        def _on_feat_slider():
-            st.session_state.feat_step = st.session_state._feat_slider_val
-
-        st.slider(
-            "タイムライン",
-            min_value=0,
-            max_value=max_step,
-            value=st.session_state.feat_step,
-            format="",
-            key="_feat_slider_val",
-            on_change=_on_feat_slider,
-        )
+        with ctrl_row[5]:
+            def _on_feat_slider():
+                st.session_state.feat_step = st.session_state._feat_slider_val
+            st.slider(
+                "タイムライン",
+                min_value=0,
+                max_value=max_step,
+                value=st.session_state.feat_step,
+                format="",
+                key="_feat_slider_val",
+                on_change=_on_feat_slider,
+                label_visibility="collapsed",
+            )
 
         current_ev = feat_events[st.session_state.feat_step]
         visible_feat = feat_events[: st.session_state.feat_step + 1]
-
-        st.markdown(f"### 📅 {current_ev['year']}　—　{current_ev['title']}")
 
         f_map_data = []
         for ev in visible_feat:
@@ -618,16 +616,21 @@ with tab_feature:
             },
             map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
         )
-        st.pydeck_chart(f_deck, height=460, use_container_width=True)
 
-        st.markdown(
-            f'<div class="map-event-info map-new-event">'
-            f'<span class="year-badge">{current_ev["year"]}</span>'
-            f'<h4>{current_ev["title"]}</h4>'
-            f'<p>{current_ev["detail"]}</p>'
-            f"</div>",
-            unsafe_allow_html=True,
-        )
+        map_col, detail_col = st.columns([3, 2])
+        with map_col:
+            st.pydeck_chart(f_deck, height=380, use_container_width=True)
+        with detail_col:
+            st.markdown(
+                f'<div class="map-event-info map-new-event" style="margin-top:0">'
+                f'<span class="year-badge">{current_ev["year"]}</span>'
+                f'<h4>{current_ev["title"]}</h4>'
+                f'<p>{current_ev["detail"]}</p>'
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(f"**{st.session_state.feat_step + 1} / {len(feat_events)}**")
+            st.progress((st.session_state.feat_step + 1) / len(feat_events))
 
         if st.session_state.feat_playing:
             time.sleep(1.8)
