@@ -236,57 +236,57 @@ with tab_map:
     if "play_speed" not in st.session_state:
         st.session_state.play_speed = 1.0
 
-    ctrl_cols = st.columns([1, 1, 1, 1, 1, 1, 4])
     max_map_step = len(TIMELINE_STEPS) - 1
     def _set_map_step(v):
         st.session_state.map_step = v
         st.session_state._map_slider_val = v
 
+    ctrl_cols = st.columns([1, 1, 1, 1, 1, 1, 6])
     with ctrl_cols[0]:
-        if st.button("⏮ 最初", use_container_width=True):
+        if st.button("⏮", use_container_width=True, key="map_first"):
             _set_map_step(0)
             st.session_state.playing = False
             st.rerun()
     with ctrl_cols[1]:
-        if st.button("◀ 前", use_container_width=True, key="map_prev"):
+        if st.button("◀", use_container_width=True, key="map_prev"):
             st.session_state.playing = False
             if st.session_state.map_step > 0:
                 _set_map_step(st.session_state.map_step - 1)
             st.rerun()
     with ctrl_cols[2]:
-        play_label = "⏸ 停止" if st.session_state.playing else "▶ 再生"
-        if st.button(play_label, use_container_width=True):
+        play_label = "⏸" if st.session_state.playing else "▶"
+        if st.button(play_label, use_container_width=True, key="map_play"):
             st.session_state.playing = not st.session_state.playing
             if st.session_state.playing and st.session_state.map_step >= max_map_step:
                 _set_map_step(0)
             st.rerun()
     with ctrl_cols[3]:
-        if st.button("次 ▶", use_container_width=True, key="map_next"):
+        if st.button("▶", use_container_width=True, key="map_next"):
             st.session_state.playing = False
             if st.session_state.map_step < max_map_step:
                 _set_map_step(st.session_state.map_step + 1)
             st.rerun()
     with ctrl_cols[4]:
-        if st.button("⏭ 最後", use_container_width=True):
+        if st.button("⏭", use_container_width=True, key="map_last"):
             _set_map_step(max_map_step)
             st.session_state.playing = False
             st.rerun()
     with ctrl_cols[5]:
-        speed = st.selectbox("速度", [0.5, 1.0, 1.5, 2.0], index=1, format_func=lambda x: f"×{x}")
+        speed = st.selectbox("速度", [0.5, 1.0, 1.5, 2.0], index=1, format_func=lambda x: f"×{x}", label_visibility="collapsed")
         st.session_state.play_speed = speed
-
-    def _on_map_slider():
-        st.session_state.map_step = st.session_state._map_slider_val
-
-    st.slider(
-        "タイムライン",
-        min_value=0,
-        max_value=max_map_step,
-        value=st.session_state.map_step,
-        format="",
-        key="_map_slider_val",
-        on_change=_on_map_slider,
-    )
+    with ctrl_cols[6]:
+        def _on_map_slider():
+            st.session_state.map_step = st.session_state._map_slider_val
+        st.slider(
+            "タイムライン",
+            min_value=0,
+            max_value=max_map_step,
+            value=st.session_state.map_step,
+            format="",
+            key="_map_slider_val",
+            on_change=_on_map_slider,
+            label_visibility="collapsed",
+        )
 
     current_year = TIMELINE_STEPS[st.session_state.map_step]
     visible_events = [ev for ev in ALL_EVENTS_SORTED if ev["sort_year"] <= current_year]
@@ -298,12 +298,6 @@ with tab_map:
             if ev is latest_event:
                 era_label = era["name"]
                 break
-
-    st.markdown(
-        f"### 📅 {year_label(current_year)}　—　{latest_event['title']}"
-    )
-    if era_label:
-        st.caption(f"時代: {era_label}")
 
     map_data = []
     for ev in visible_events:
@@ -323,12 +317,7 @@ with tab_map:
             "opacity": 240 if is_latest else 120,
         })
 
-    view_state = pdk.ViewState(
-        latitude=20,
-        longitude=30,
-        zoom=1.1,
-        pitch=0,
-    )
+    view_state = pdk.ViewState(latitude=20, longitude=30, zoom=1.1, pitch=0)
 
     scatter = pdk.Layer(
         "ScatterplotLayer",
@@ -347,24 +336,20 @@ with tab_map:
         tooltip={
             "html": "<b>{title}</b><br/>{year}<br/>{region}<br/>{detail}",
             "style": {
-                "backgroundColor": "#1a1a2e",
-                "color": "white",
-                "fontSize": "13px",
-                "maxWidth": "320px",
-                "padding": "10px",
-                "borderRadius": "8px",
+                "backgroundColor": "#1a1a2e", "color": "white",
+                "fontSize": "13px", "maxWidth": "320px",
+                "padding": "10px", "borderRadius": "8px",
             },
         },
         map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
     )
 
-    st.pydeck_chart(deck, height=480, use_container_width=True)
-
-    info_cols = st.columns([3, 2, 3])
-
-    with info_cols[0]:
+    map_col, detail_col = st.columns([3, 2])
+    with map_col:
+        st.pydeck_chart(deck, height=380, use_container_width=True)
+    with detail_col:
         st.markdown(
-            f'<div class="map-event-info map-new-event">'
+            f'<div class="map-event-info map-new-event" style="margin-top:0">'
             f'<span class="year-badge">{latest_event["year"]}</span> '
             f'<span class="region-tag" style="background-color: {REGION_COLORS.get(latest_event["region"], "#888")}">{latest_event["region"]}</span>'
             f'<h4>{latest_event["title"]}</h4>'
@@ -372,27 +357,16 @@ with tab_map:
             f"</div>",
             unsafe_allow_html=True,
         )
-
-    with info_cols[1]:
-        st.markdown(f"**表示中: {len(visible_events)} / {len(ALL_EVENTS_SORTED)} 件**")
-        st.progress(len(visible_events) / len(ALL_EVENTS_SORTED))
-        st.markdown("##### 地域の凡例")
+        if era_label:
+            st.caption(f"時代: {era_label}")
+        st.markdown(f"**{st.session_state.map_step + 1} / {len(ALL_EVENTS_SORTED)} 件**")
+        st.progress((st.session_state.map_step + 1) / len(ALL_EVENTS_SORTED))
         legend_html = " ".join(
             f'<span class="region-tag" style="background-color: {color}">{region}: '
             f'{sum(1 for ev in visible_events if ev["region"] == region)}件</span>'
             for region, color in REGION_COLORS.items()
         )
         st.markdown(legend_html, unsafe_allow_html=True)
-
-    with info_cols[2]:
-        st.markdown("##### 最近のイベント")
-        recent = list(reversed(visible_events))[:5]
-        for ev in recent:
-            rc = REGION_COLORS.get(ev["region"], "#888")
-            st.markdown(
-                f'<span style="color:{rc}">●</span> **{ev["year"]}** {ev["title"]}',
-                unsafe_allow_html=True,
-            )
 
     if st.session_state.playing:
         delay = 1.5 / st.session_state.play_speed
