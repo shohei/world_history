@@ -229,62 +229,54 @@ with tab_map:
     st.header("🗺️ 地図タイムライン")
     st.write("スライダーで時代を動かすと、その時点までの出来事が地図上に表示されます。")
 
+    max_map_step = len(TIMELINE_STEPS) - 1
     if "map_step" not in st.session_state:
-        st.session_state.map_step = len(TIMELINE_STEPS) - 1
+        st.session_state.map_step = max_map_step
     if "playing" not in st.session_state:
         st.session_state.playing = False
     if "play_speed" not in st.session_state:
         st.session_state.play_speed = 1.0
 
-    max_map_step = len(TIMELINE_STEPS) - 1
-    def _set_map_step(v):
-        st.session_state.map_step = v
-        st.session_state._map_slider_val = v
-
     ctrl_cols = st.columns([1, 1, 1, 1, 1, 1, 6])
     with ctrl_cols[0]:
-        if st.button("⏮", width="stretch", key="map_first"):
-            _set_map_step(0)
+        if st.button("⏮", key="map_first"):
+            st.session_state.map_step = 0
             st.session_state.playing = False
             st.rerun()
     with ctrl_cols[1]:
-        if st.button("◀", width="stretch", key="map_prev"):
+        if st.button("◀", key="map_prev"):
             st.session_state.playing = False
             if st.session_state.map_step > 0:
-                _set_map_step(st.session_state.map_step - 1)
+                st.session_state.map_step -= 1
             st.rerun()
     with ctrl_cols[2]:
         play_label = "⏸" if st.session_state.playing else "▶"
-        if st.button(play_label, width="stretch", key="map_play"):
+        if st.button(play_label, key="map_play"):
             st.session_state.playing = not st.session_state.playing
             if st.session_state.playing and st.session_state.map_step >= max_map_step:
-                _set_map_step(0)
+                st.session_state.map_step = 0
             st.rerun()
     with ctrl_cols[3]:
-        if st.button("▶", width="stretch", key="map_next"):
+        if st.button("▶", key="map_next"):
             st.session_state.playing = False
             if st.session_state.map_step < max_map_step:
-                _set_map_step(st.session_state.map_step + 1)
+                st.session_state.map_step += 1
             st.rerun()
     with ctrl_cols[4]:
-        if st.button("⏭", width="stretch", key="map_last"):
-            _set_map_step(max_map_step)
+        if st.button("⏭", key="map_last"):
+            st.session_state.map_step = max_map_step
             st.session_state.playing = False
             st.rerun()
     with ctrl_cols[5]:
         speed = st.selectbox("速度", [0.5, 1.0, 1.5, 2.0], index=1, format_func=lambda x: f"×{x}", label_visibility="collapsed")
         st.session_state.play_speed = speed
     with ctrl_cols[6]:
-        def _on_map_slider():
-            st.session_state.map_step = st.session_state._map_slider_val
-        st.slider(
+        st.session_state.map_step = st.slider(
             "タイムライン",
             min_value=0,
             max_value=max_map_step,
             value=st.session_state.map_step,
             format="",
-            key="_map_slider_val",
-            on_change=_on_map_slider,
             label_visibility="collapsed",
         )
 
@@ -372,7 +364,7 @@ with tab_map:
         delay = 1.5 / st.session_state.play_speed
         time.sleep(delay)
         if st.session_state.map_step < len(TIMELINE_STEPS) - 1:
-            _set_map_step(st.session_state.map_step + 1)
+            st.session_state.map_step += 1
             st.rerun()
         else:
             st.session_state.playing = False
@@ -458,51 +450,43 @@ with tab_feature:
         if st.session_state.feat_step > max_step:
             st.session_state.feat_step = max_step
 
-        def _set_feat_step(v):
-            st.session_state.feat_step = v
-            st.session_state._feat_slider_val = v
-
         ctrl_row = st.columns([1, 1, 1, 1, 1, 8])
         with ctrl_row[0]:
-            if st.button("⏮", key="feat_first", width="stretch"):
-                _set_feat_step(0)
+            if st.button("⏮", key="feat_first"):
+                st.session_state.feat_step = 0
                 st.session_state.feat_playing = False
                 st.rerun()
         with ctrl_row[1]:
-            if st.button("◀", key="feat_prev", width="stretch"):
+            if st.button("◀", key="feat_prev"):
                 st.session_state.feat_playing = False
                 if st.session_state.feat_step > 0:
-                    _set_feat_step(st.session_state.feat_step - 1)
+                    st.session_state.feat_step -= 1
                 st.rerun()
         with ctrl_row[2]:
             fp_label = "⏸" if st.session_state.feat_playing else "▶"
-            if st.button(fp_label, key="feat_play", width="stretch"):
+            if st.button(fp_label, key="feat_play"):
                 st.session_state.feat_playing = not st.session_state.feat_playing
                 if st.session_state.feat_playing and st.session_state.feat_step >= max_step:
-                    _set_feat_step(0)
+                    st.session_state.feat_step = 0
                 st.rerun()
         with ctrl_row[3]:
-            if st.button("▶", key="feat_next", width="stretch"):
+            if st.button("▶", key="feat_next"):
                 st.session_state.feat_playing = False
                 if st.session_state.feat_step < max_step:
-                    _set_feat_step(st.session_state.feat_step + 1)
+                    st.session_state.feat_step += 1
                 st.rerun()
         with ctrl_row[4]:
-            if st.button("⏭", key="feat_last", width="stretch"):
-                _set_feat_step(max_step)
+            if st.button("⏭", key="feat_last"):
+                st.session_state.feat_step = max_step
                 st.session_state.feat_playing = False
                 st.rerun()
         with ctrl_row[5]:
-            def _on_feat_slider():
-                st.session_state.feat_step = st.session_state._feat_slider_val
-            st.slider(
+            st.session_state.feat_step = st.slider(
                 "タイムライン",
                 min_value=0,
                 max_value=max_step,
                 value=st.session_state.feat_step,
                 format="",
-                key="_feat_slider_val",
-                on_change=_on_feat_slider,
                 label_visibility="collapsed",
             )
 
@@ -609,7 +593,7 @@ with tab_feature:
         if st.session_state.feat_playing:
             time.sleep(1.8)
             if st.session_state.feat_step < max_step:
-                _set_feat_step(st.session_state.feat_step + 1)
+                st.session_state.feat_step += 1
                 st.rerun()
             else:
                 st.session_state.feat_playing = False
@@ -681,7 +665,7 @@ with tab_quiz:
     with col_q2:
         st.write("")
         st.write("")
-        if st.button("🔄 新しいクイズを開始", width="stretch"):
+        if st.button("🔄 新しいクイズを開始"):
             st.session_state.quiz_questions = random.sample(QUIZ_DATA, min(num_questions, len(QUIZ_DATA)))
             st.session_state.quiz_answers = {}
             st.session_state.quiz_submitted = False
