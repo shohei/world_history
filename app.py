@@ -243,31 +243,31 @@ with tab_map:
 
     ctrl_cols = st.columns([1, 1, 1, 1, 1, 1, 6])
     with ctrl_cols[0]:
-        if st.button("⏮", use_container_width=True, key="map_first"):
+        if st.button("⏮", width="stretch", key="map_first"):
             _set_map_step(0)
             st.session_state.playing = False
             st.rerun()
     with ctrl_cols[1]:
-        if st.button("◀", use_container_width=True, key="map_prev"):
+        if st.button("◀", width="stretch", key="map_prev"):
             st.session_state.playing = False
             if st.session_state.map_step > 0:
                 _set_map_step(st.session_state.map_step - 1)
             st.rerun()
     with ctrl_cols[2]:
         play_label = "⏸" if st.session_state.playing else "▶"
-        if st.button(play_label, use_container_width=True, key="map_play"):
+        if st.button(play_label, width="stretch", key="map_play"):
             st.session_state.playing = not st.session_state.playing
             if st.session_state.playing and st.session_state.map_step >= max_map_step:
                 _set_map_step(0)
             st.rerun()
     with ctrl_cols[3]:
-        if st.button("▶", use_container_width=True, key="map_next"):
+        if st.button("▶", width="stretch", key="map_next"):
             st.session_state.playing = False
             if st.session_state.map_step < max_map_step:
                 _set_map_step(st.session_state.map_step + 1)
             st.rerun()
     with ctrl_cols[4]:
-        if st.button("⏭", use_container_width=True, key="map_last"):
+        if st.button("⏭", width="stretch", key="map_last"):
             _set_map_step(max_map_step)
             st.session_state.playing = False
             st.rerun()
@@ -346,7 +346,7 @@ with tab_map:
 
     map_col, detail_col = st.columns([3, 2])
     with map_col:
-        st.pydeck_chart(deck, height=380, use_container_width=True)
+        st.pydeck_chart(deck, height=380)
     with detail_col:
         st.markdown(
             f'<div class="map-event-info map-new-event" style="margin-top:0">'
@@ -464,31 +464,31 @@ with tab_feature:
 
         ctrl_row = st.columns([1, 1, 1, 1, 1, 8])
         with ctrl_row[0]:
-            if st.button("⏮", key="feat_first", use_container_width=True):
+            if st.button("⏮", key="feat_first", width="stretch"):
                 _set_feat_step(0)
                 st.session_state.feat_playing = False
                 st.rerun()
         with ctrl_row[1]:
-            if st.button("◀", key="feat_prev", use_container_width=True):
+            if st.button("◀", key="feat_prev", width="stretch"):
                 st.session_state.feat_playing = False
                 if st.session_state.feat_step > 0:
                     _set_feat_step(st.session_state.feat_step - 1)
                 st.rerun()
         with ctrl_row[2]:
             fp_label = "⏸" if st.session_state.feat_playing else "▶"
-            if st.button(fp_label, key="feat_play", use_container_width=True):
+            if st.button(fp_label, key="feat_play", width="stretch"):
                 st.session_state.feat_playing = not st.session_state.feat_playing
                 if st.session_state.feat_playing and st.session_state.feat_step >= max_step:
                     _set_feat_step(0)
                 st.rerun()
         with ctrl_row[3]:
-            if st.button("▶", key="feat_next", use_container_width=True):
+            if st.button("▶", key="feat_next", width="stretch"):
                 st.session_state.feat_playing = False
                 if st.session_state.feat_step < max_step:
                     _set_feat_step(st.session_state.feat_step + 1)
                 st.rerun()
         with ctrl_row[4]:
-            if st.button("⏭", key="feat_last", use_container_width=True):
+            if st.button("⏭", key="feat_last", width="stretch"):
                 _set_feat_step(max_step)
                 st.session_state.feat_playing = False
                 st.rerun()
@@ -593,7 +593,7 @@ with tab_feature:
 
         map_col, detail_col = st.columns([3, 2])
         with map_col:
-            st.pydeck_chart(f_deck, height=380, use_container_width=True)
+            st.pydeck_chart(f_deck, height=380)
         with detail_col:
             st.markdown(
                 f'<div class="map-event-info map-new-event" style="margin-top:0">'
@@ -681,7 +681,7 @@ with tab_quiz:
     with col_q2:
         st.write("")
         st.write("")
-        if st.button("🔄 新しいクイズを開始", use_container_width=True):
+        if st.button("🔄 新しいクイズを開始", width="stretch"):
             st.session_state.quiz_questions = random.sample(QUIZ_DATA, min(num_questions, len(QUIZ_DATA)))
             st.session_state.quiz_answers = {}
             st.session_state.quiz_submitted = False
@@ -700,7 +700,7 @@ with tab_quiz:
                     label_visibility="collapsed",
                 )
                 st.divider()
-            submitted = st.form_submit_button("📝 回答を提出する", use_container_width=True)
+            submitted = st.form_submit_button("📝 回答を提出する")
             if submitted:
                 st.session_state.quiz_submitted = True
 
